@@ -6,12 +6,13 @@ int peek(FILE *fp, int index, char expected);
 int find(FILE *fp, char* character_name);
 char* retrieve_name(FILE *fp, int index);
 
+// Peek forwards into the file, seeing what char is there. 
 int peek(FILE *fp, int index, char expected) {
   char c = fgetc(fp);
   if (c == expected) {
+    fseek(fp, index, SEEK_SET);
     return 1;
   }
-  fseek(fp, index, SEEK_SET);
   return 0;
 }
 
@@ -23,6 +24,7 @@ int find(FILE *fp, char* character_name) {
     // fgetc() will consume the character at index N, so the fp is really pointing to index + 1 after the call.
     // as a result, retrieve_name will start at the character after !, not at the first letter of the Character's name.
     // so, in retrieve_name, we add 1 to index to point it to the first letter of the Character's name. fseek() brings the fp there.
+    
     if (c == '!' && peek(fp, index, 'C') == 1) {
       if (strcmp(retrieve_name(fp, index), character_name) == 0) {
 	printf("Character %s found at index %d\n", character_name, index);
