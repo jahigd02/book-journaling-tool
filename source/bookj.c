@@ -23,10 +23,15 @@ int find(FILE *fp, char* character_name) {
   char c;
   
   while ((c = fgetc(fp)) != EOF) {
+    // fp points to character after !, not ! itself, after the fgetc(fp) in the while
     if (c == '!' && peek(fp, index, 'C') == 1) {
-      if (strcmp(retrieve_name(fp, index+1), character_name) == 0) {
+      // so we do index + 1 to tell it to start not at the fp (!+1) but the name (!+2)/(C+1)
+      char *temp_name;
+      if (strcmp(temp_name = retrieve_name(fp, index+1), character_name) == 0) {
 	printf("Character %s found at index %d\n", character_name, index);
 	return index;
+      } else {
+	printf("Character %s not found, found %s instead\n", character_name, temp_name);
       }
     }
     index++;
@@ -37,22 +42,18 @@ int find(FILE *fp, char* character_name) {
 char* retrieve_name(FILE *fp, int index) {
   int length = 0;
   char c;
-  index = index;
+
   fseek(fp, index, SEEK_SET);
-  
+
   while ((c = fgetc(fp)) != '!' && (c != EOF)) {
-    if (c != '\n')
-      length++;
+    length++;
   }
-  
-  printf("\n");
-  
   fseek(fp, index, SEEK_SET);
   
   char* name = malloc(sizeof(char) * length);
-  fread(name, sizeof(char), length, fp);
-
-  fseek(fp, index, SEEK_SET);
+  fread(name, sizeof(char), length-1, fp);
+  // in the event that it fails to find the name, we need to seek back to the entry indicator ('C', etc), which is index-1
+  fseek(fp, index-1, SEEK_SET);
   
   return name;
 }
